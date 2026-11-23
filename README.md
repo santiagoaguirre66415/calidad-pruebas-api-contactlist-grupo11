@@ -1,13 +1,11 @@
-# Proyecto Final – Calidad y Pruebas del Software (Grupo 11)
+﻿# Proyecto Final – Calidad y Pruebas del Software (Grupo 11)
 
 Pruebas funcionales y automatizadas de **Contact List API** (`https://thinking-tester-contact-list.herokuapp.com/`) con **Postman** y **Karate**.
 
 ## Integrantes
 
-| Nombre | Rol |
-|---|---|
-| Santiago Aguirre Salinas | _por completar_ |
-| Manuel Felipe Castellanos Calderón | _por completar_ |
+- Santiago Aguirre Salinas
+- Manuel Felipe Castellanos Calderón
 
 ## Resultado
 
