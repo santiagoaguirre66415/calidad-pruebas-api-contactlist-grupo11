@@ -1,0 +1,2035 @@
+{
+  "info": {
+    "name": "ContactList-Grupo11",
+    "description": "Coleccion Postman del Grupo 11 - Contact List API. Cubre CP-001 a CP-015. Ejecutar completa con el Runner (orden encadenado con pm.execution.setNextRequest) o con newman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "CP-001a Registrar usuario",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uid = Date.now() + \"-\" + Math.random().toString(36).slice(2, 8);",
+                  "pm.environment.set(\"userEmail\", \"qa.g11.\" + uid + \"@example.com\");",
+                  "pm.environment.set(\"userPassword\", \"Pw!\" + uid);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Estructura y tipos: user (object) y token (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"user\").that.is.an(\"object\");",
+                  "  pm.expect(r.token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(r.user._id).to.be.a(\"string\");",
+                  "  pm.expect(r.user.firstName).to.eql(\"Ana\");",
+                  "  pm.expect(r.user.lastName).to.eql(\"Prueba\");",
+                  "  pm.expect(r.user.email).to.eql(pm.environment.get(\"userEmail\"));",
+                  "});",
+                  "pm.test(\"La contrasena no se expone\", function () { pm.expect(pm.response.json().user).to.not.have.property(\"password\"); });",
+                  "pm.environment.set(\"token\", pm.response.json().token);",
+                  "pm.environment.set(\"userId\", pm.response.json().user._id);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-001b Consultar perfil con token del registro\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Prueba\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-001b Consultar perfil con token del registro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Los datos coinciden con el registro y no hay password\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r._id).to.eql(pm.environment.get(\"userId\"));",
+                  "  pm.expect(r.firstName).to.eql(\"Ana\");",
+                  "  pm.expect(r.lastName).to.eql(\"Prueba\");",
+                  "  pm.expect(r.email).to.eql(pm.environment.get(\"userEmail\"));",
+                  "  pm.expect(r).to.not.have.property(\"password\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-002a Crear contacto con todos los campos\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contactos CRUD",
+      "item": [
+        {
+          "name": "CP-002a Crear contacto con todos los campos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Contacto creado con todos los campos y _id string\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const esperado = {",
+                  "  \"firstName\": \"Juan\",",
+                  "  \"lastName\": \"Perez\",",
+                  "  \"birthdate\": \"1990-05-20\",",
+                  "  \"email\": \"juan.perez@example.com\",",
+                  "  \"phone\": \"8005551234\",",
+                  "  \"street1\": \"Calle Falsa 123\",",
+                  "  \"street2\": \"Apto 4\",",
+                  "  \"city\": \"Quito\",",
+                  "  \"stateProvince\": \"Pichincha\",",
+                  "  \"postalCode\": \"170101\",",
+                  "  \"country\": \"EC\"",
+                  "};",
+                  "  Object.keys(esperado).forEach(k => pm.expect(r[k], k).to.eql(esperado[k]));",
+                  "  pm.expect(r._id).to.be.a(\"string\");",
+                  "  pm.expect(r.owner).to.eql(pm.environment.get(\"userId\"));",
+                  "});",
+                  "pm.environment.set(\"contactId\", pm.response.json()._id);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-002b Consultar contacto creado\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Perez\",\n  \"birthdate\": \"1990-05-20\",\n  \"email\": \"juan.perez@example.com\",\n  \"phone\": \"8005551234\",\n  \"street1\": \"Calle Falsa 123\",\n  \"street2\": \"Apto 4\",\n  \"city\": \"Quito\",\n  \"stateProvince\": \"Pichincha\",\n  \"postalCode\": \"170101\",\n  \"country\": \"EC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-002b Consultar contacto creado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"La informacion se almaceno correctamente\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const esperado = {",
+                  "  \"firstName\": \"Juan\",",
+                  "  \"lastName\": \"Perez\",",
+                  "  \"birthdate\": \"1990-05-20\",",
+                  "  \"email\": \"juan.perez@example.com\",",
+                  "  \"phone\": \"8005551234\",",
+                  "  \"street1\": \"Calle Falsa 123\",",
+                  "  \"street2\": \"Apto 4\",",
+                  "  \"city\": \"Quito\",",
+                  "  \"stateProvince\": \"Pichincha\",",
+                  "  \"postalCode\": \"170101\",",
+                  "  \"country\": \"EC\"",
+                  "};",
+                  "  Object.keys(esperado).forEach(k => pm.expect(r[k], k).to.eql(esperado[k]));",
+                  "  pm.expect(r._id).to.eql(pm.environment.get(\"contactId\"));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-003a PATCH parcial (phone y city)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-003a PATCH parcial (phone y city)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Campos enviados actualizados\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.phone).to.eql(\"7005550000\");",
+                  "  pm.expect(r.city).to.eql(\"Guayaquil\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-003b Verificar campos no enviados conservados\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"7005550000\",\n  \"city\": \"Guayaquil\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-003b Verificar campos no enviados conservados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Campos no enviados conservan su valor original\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const original = {",
+                  "  \"firstName\": \"Juan\",",
+                  "  \"lastName\": \"Perez\",",
+                  "  \"birthdate\": \"1990-05-20\",",
+                  "  \"email\": \"juan.perez@example.com\",",
+                  "  \"phone\": \"8005551234\",",
+                  "  \"street1\": \"Calle Falsa 123\",",
+                  "  \"street2\": \"Apto 4\",",
+                  "  \"city\": \"Quito\",",
+                  "  \"stateProvince\": \"Pichincha\",",
+                  "  \"postalCode\": \"170101\",",
+                  "  \"country\": \"EC\"",
+                  "};",
+                  "  [\"firstName\",\"lastName\",\"birthdate\",\"email\",\"street1\",\"street2\",\"stateProvince\",\"postalCode\",\"country\"].forEach(k => pm.expect(r[k], k).to.eql(original[k]));",
+                  "  pm.expect(r.phone).to.eql(\"7005550000\");",
+                  "  pm.expect(r.city).to.eql(\"Guayaquil\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-004a PUT completo\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-004a PUT completo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Respuesta refleja los nuevos valores\", function () {",
+                  "  const r = pm.response.json(); const n = {",
+                  "  \"firstName\": \"Maria\",",
+                  "  \"lastName\": \"Lopez\",",
+                  "  \"birthdate\": \"1985-12-01\",",
+                  "  \"email\": \"maria.lopez@example.com\",",
+                  "  \"phone\": \"9005559999\",",
+                  "  \"street1\": \"Av. Siempre Viva 742\",",
+                  "  \"street2\": \"Piso 2\",",
+                  "  \"city\": \"Cuenca\",",
+                  "  \"stateProvince\": \"Azuay\",",
+                  "  \"postalCode\": \"010101\",",
+                  "  \"country\": \"EC\"",
+                  "};",
+                  "  Object.keys(n).forEach(k => pm.expect(r[k], k).to.eql(n[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-004b Verificar persistencia del PUT\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Lopez\",\n  \"birthdate\": \"1985-12-01\",\n  \"email\": \"maria.lopez@example.com\",\n  \"phone\": \"9005559999\",\n  \"street1\": \"Av. Siempre Viva 742\",\n  \"street2\": \"Piso 2\",\n  \"city\": \"Cuenca\",\n  \"stateProvince\": \"Azuay\",\n  \"postalCode\": \"010101\",\n  \"country\": \"EC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-004b Verificar persistencia del PUT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Los cambios del PUT se persistieron\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const n = {",
+                  "  \"firstName\": \"Maria\",",
+                  "  \"lastName\": \"Lopez\",",
+                  "  \"birthdate\": \"1985-12-01\",",
+                  "  \"email\": \"maria.lopez@example.com\",",
+                  "  \"phone\": \"9005559999\",",
+                  "  \"street1\": \"Av. Siempre Viva 742\",",
+                  "  \"street2\": \"Piso 2\",",
+                  "  \"city\": \"Cuenca\",",
+                  "  \"stateProvince\": \"Azuay\",",
+                  "  \"postalCode\": \"010101\",",
+                  "  \"country\": \"EC\"",
+                  "};",
+                  "  Object.keys(n).forEach(k => pm.expect(r[k], k).to.eql(n[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-005a Crear segundo contacto\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-005a Crear segundo contacto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"contactId2\", pm.response.json()._id);",
+                  "pm.environment.set(\"contact2\", JSON.stringify(pm.response.json()));",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-005b Eliminar primer contacto\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Dos\",\n  \"lastName\": \"Perez\",\n  \"birthdate\": \"1990-05-20\",\n  \"email\": \"dos@example.com\",\n  \"phone\": \"8005551234\",\n  \"street1\": \"Calle Falsa 123\",\n  \"street2\": \"Apto 4\",\n  \"city\": \"Quito\",\n  \"stateProvince\": \"Pichincha\",\n  \"postalCode\": \"170101\",\n  \"country\": \"EC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-005b Eliminar primer contacto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-005c Contacto eliminado ya no existe\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-005c Contacto eliminado ya no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-005d Listado conserva el otro contacto\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-005d Listado conserva el otro contacto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Listado es arreglo, sin el eliminado y con el contacto restante\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.be.an(\"array\").with.lengthOf(1);",
+                  "  const ids = r.map(c => c._id);",
+                  "  pm.expect(ids).to.not.include(pm.environment.get(\"contactId\"));",
+                  "  pm.expect(ids).to.include(pm.environment.get(\"contactId2\"));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-006a Crear contacto sin lastName (campo ausente)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validaciones Negativas",
+      "item": [
+        {
+          "name": "CP-006a Crear contacto sin lastName (campo ausente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Sin token ni _id en la respuesta\", function () {",
+                  "  const txt = pm.response.text();",
+                  "  pm.expect(txt).to.not.include('\"token\"');",
+                  "  pm.expect(txt).to.not.include('\"_id\"');",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-006b Crear contacto sin lastName (valor null)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-006b Crear contacto sin lastName (valor null)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Sin token ni _id en la respuesta\", function () {",
+                  "  const txt = pm.response.text();",
+                  "  pm.expect(txt).to.not.include('\"token\"');",
+                  "  pm.expect(txt).to.not.include('\"_id\"');",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-006c Crear contacto sin lastName (cadena vacia)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-006c Crear contacto sin lastName (cadena vacia)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Sin token ni _id en la respuesta\", function () {",
+                  "  const txt = pm.response.text();",
+                  "  pm.expect(txt).to.not.include('\"token\"');",
+                  "  pm.expect(txt).to.not.include('\"_id\"');",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-007a GET contacto inexistente\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-007a GET contacto inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-007b PUT contacto inexistente\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{nonExistentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{nonExistentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-007b PUT contacto inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-007c PATCH contacto inexistente\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{nonExistentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{nonExistentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"X\",\n  \"lastName\": \"Y\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-007c PATCH contacto inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-007d DELETE contacto inexistente\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{nonExistentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{nonExistentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"X\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-007d DELETE contacto inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-008a PUT sin firstName\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{nonExistentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{nonExistentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-008a PUT sin firstName",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-008b Verificar contacto original intacto\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"Modificado\",\n  \"email\": \"modificado@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-008b Verificar contacto original intacto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El contacto no fue modificado\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const orig = JSON.parse(pm.environment.get(\"contact2\"));",
+                  "  Object.keys(orig).forEach(k => pm.expect(r[k], k).to.eql(orig[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-009a Tipo incorrecto: phone como arreglo [Exploratorio]\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-009a Tipo incorrecto: phone como arreglo [Exploratorio]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-009b Tipo incorrecto: birthdate como numero [Exploratorio]\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"A\",\n  \"lastName\": \"B\",\n  \"phone\": [\"800\", \"555\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-009b Tipo incorrecto: birthdate como numero [Exploratorio]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-010a POST con arreglo JSON como cuerpo [Exploratorio]\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"A\",\n  \"lastName\": \"B\",\n  \"birthdate\": 19900520\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-010a POST con arreglo JSON como cuerpo [Exploratorio]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-010b PATCH con arreglo JSON como cuerpo [Exploratorio]\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[ { \"firstName\": \"A\", \"lastName\": \"B\" } ]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-010b PATCH con arreglo JSON como cuerpo [Exploratorio]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Respuesta controlada (sin error 5xx)\", function () { pm.expect(pm.response.code).to.be.below(500); });",
+                  "console.log(\"CP-010b HTTP\", pm.response.code);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-010b2 Verificar contacto sin alteraciones tras PATCH con arreglo\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[ { \"firstName\": \"Modificado\" } ]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-010b2 Verificar contacto sin alteraciones tras PATCH con arreglo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El contacto no fue alterado\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const orig = JSON.parse(pm.environment.get(\"contact2\"));",
+                  "  Object.keys(orig).forEach(k => pm.expect(r[k], k).to.eql(orig[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-010c POST con Content-Type application/xml [Exploratorio]\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-010c POST con Content-Type application/xml [Exploratorio]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Respuesta controlada: error 4xx, sin 5xx\", function () { pm.expect(pm.response.code).to.be.within(400, 499); });",
+                  "console.log(\"CP-010c HTTP\", pm.response.code);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-011a Registrar usuario sin email (campo ausente)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/xml"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<contact><firstName>A</firstName><lastName>B</lastName></contact>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-011a Registrar usuario sin email (campo ausente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Sin token ni _id en la respuesta\", function () {",
+                  "  const txt = pm.response.text();",
+                  "  pm.expect(txt).to.not.include('\"token\"');",
+                  "  pm.expect(txt).to.not.include('\"_id\"');",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-011b Registrar usuario sin email (valor null)\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"QA\",\n  \"lastName\": \"G11\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-011b Registrar usuario sin email (valor null)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Sin token ni _id en la respuesta\", function () {",
+                  "  const txt = pm.response.text();",
+                  "  pm.expect(txt).to.not.include('\"token\"');",
+                  "  pm.expect(txt).to.not.include('\"_id\"');",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-012a PATCH con email de formato invalido\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"QA\",\n  \"lastName\": \"G11\",\n  \"email\": null,\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-012a PATCH con email de formato invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Respuesta de error con atributo message (string)\", function () {",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r).to.have.property(\"message\");",
+                  "  pm.expect(r.message).to.be.a(\"string\");",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-012b Verificar email original sin cambios\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"esto-no-es-un-email\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-012b Verificar email original sin cambios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El email no fue alterado\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const orig = JSON.parse(pm.environment.get(\"contact2\"));",
+                  "  pm.expect(r.email).to.eql(orig.email);",
+                  "  Object.keys(orig).forEach(k => pm.expect(r[k], k).to.eql(orig[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-013a GET /contacts sin Authorization\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seguridad y Autenticacion",
+      "item": [
+        {
+          "name": "CP-013a GET /contacts sin Authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta de error con atributo error (string)\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\"); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-013b GET /users/me sin Authorization\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-013b GET /users/me sin Authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta de error con atributo error (string)\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\"); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-013c POST /contacts sin Authorization\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-013c POST /contacts sin Authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta de error con atributo error (string)\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\"); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-014-setup Registrar usuario 2\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sin\",\n  \"lastName\": \"Token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-014-setup Registrar usuario 2",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const uid = Date.now() + \"-\" + Math.random().toString(36).slice(2, 8);",
+                  "pm.environment.set(\"userEmail2\", \"qa.g11.u2.\" + uid + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"tokenUser2\", pm.response.json().token);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-014a GET contacto de otro usuario\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Otro\",\n  \"lastName\": \"Usuario\",\n  \"email\": \"{{userEmail2}}\",\n  \"password\": \"Pw!{{$timestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-014a GET contacto de otro usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Acceso denegado (401, 403 o 404), nunca exitoso\", function () { pm.expect([401, 403, 404]).to.include(pm.response.code); });",
+                  "console.log(\"HTTP\", pm.response.code);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-014b PUT contacto de otro usuario\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-014b PUT contacto de otro usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Acceso denegado (401, 403 o 404), nunca exitoso\", function () { pm.expect([401, 403, 404]).to.include(pm.response.code); });",
+                  "console.log(\"HTTP\", pm.response.code);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-014c DELETE contacto de otro usuario\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Hack\",\n  \"lastName\": \"Intruso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-014c DELETE contacto de otro usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Acceso denegado (401, 403 o 404), nunca exitoso\", function () { pm.expect([401, 403, 404]).to.include(pm.response.code); });",
+                  "console.log(\"HTTP\", pm.response.code);",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-014d Propietario conserva su contacto intacto\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-014d Propietario conserva su contacto intacto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El contacto sigue existiendo y sin cambios\", function () {",
+                  "  const r = pm.response.json();",
+                  "  const orig = JSON.parse(pm.environment.get(\"contact2\"));",
+                  "  Object.keys(orig).forEach(k => pm.expect(r[k], k).to.eql(orig[k]));",
+                  "});",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-015a Eliminar cuenta de usuario\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts",
+                "{{contactId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-015a Eliminar cuenta de usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-015b Token anterior deja de funcionar\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-015b Token anterior deja de funcionar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Respuesta de error con atributo error (string)\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\"); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"CP-015c Login con credenciales eliminadas\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-015c Login con credenciales eliminadas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Codigo HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Sin token en la respuesta\", function () { pm.expect(pm.response.text()).to.not.include(\"token\"); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(\"Cleanup Eliminar usuario 2\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cleanup Eliminar usuario 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Usuario 2 de prueba eliminado (limpieza)\", function () { pm.response.to.have.status(200); });",
+                  "// Encadenamiento",
+                  "pm.execution.setNextRequest(null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

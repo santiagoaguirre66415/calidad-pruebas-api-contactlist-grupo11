@@ -1,0 +1,340 @@
+﻿node.exe : (node:23496) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+At D:\tecnologias\workspace\npm\newman.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/newman/bin/newman.js" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:23496) [D...ts.F_OK instead:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+ContactList-Grupo11
+
+□ Usuarios
+└ CP-001a Registrar usuario
+  POST https://thinking-tester-contact-list.herokuapp.com/users [201 Created, 1.27kB, 490ms]
+  √  Codigo HTTP 201
+  √  Estructura y tipos: user (object) y token (string)
+  √  La contrasena no se expone
+
+Attempting to set next request to CP-001b Consultar perfil con token del registro
+
+└ CP-001b Consultar perfil con token del registro
+  GET https://thinking-tester-contact-list.herokuapp.com/users/me [200 OK, 870B, 108ms]
+  √  Codigo HTTP 200
+  √  Los datos coinciden con el registro y no hay password
+
+Attempting to set next request to CP-002a Crear contacto con todos los campos
+
+□ Contactos CRUD
+└ CP-002a Crear contacto con todos los campos
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [201 Created, 1.07kB, 115ms]
+  √  Codigo HTTP 201
+  √  Contacto creado con todos los campos y _id string
+
+Attempting to set next request to CP-002b Consultar contacto creado
+
+└ CP-002b Consultar contacto creado
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 1.06kB, 112ms]
+  √  Codigo HTTP 200
+  √  La informacion se almaceno correctamente
+
+Attempting to set next request to CP-003a PATCH parcial (phone y city)
+
+└ CP-003a PATCH parcial (phone y city)
+  PATCH https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 1.07kB, 119ms]
+  √  Codigo HTTP 200
+  √  Campos enviados actualizados
+
+Attempting to set next request to CP-003b Verificar campos no enviados conservados
+
+└ CP-003b Verificar campos no enviados conservados
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 1.07kB, 112ms]
+  √  Codigo HTTP 200
+  √  Campos no enviados conservan su valor original
+
+Attempting to set next request to CP-004a PUT completo
+
+└ CP-004a PUT completo
+  PUT https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 1.07kB, 113ms]
+  √  Codigo HTTP 200
+  √  Respuesta refleja los nuevos valores
+
+Attempting to set next request to CP-004b Verificar persistencia del PUT
+
+└ CP-004b Verificar persistencia del PUT
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 1.07kB, 103ms]
+  √  Codigo HTTP 200
+  √  Los cambios del PUT se persistieron
+
+Attempting to set next request to CP-005a Crear segundo contacto
+
+└ CP-005a Crear segundo contacto
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [201 Created, 1.06kB, 117ms]
+  √  Codigo HTTP 201
+
+Attempting to set next request to CP-005b Eliminar primer contacto
+
+└ CP-005b Eliminar primer contacto
+  DELETE https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [200 OK, 750B, 109ms]
+  √  Codigo HTTP 200
+
+Attempting to set next request to CP-005c Contacto eliminado ya no existe
+
+└ CP-005c Contacto eliminado ya no existe
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445a3cd8c0001517ec01 [404 Not Found, 660B, 102ms]
+  √  Codigo HTTP 404
+
+Attempting to set next request to CP-005d Listado conserva el otro contacto
+
+└ CP-005d Listado conserva el otro contacto
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts [200 OK, 1.06kB, 100ms]
+  √  Codigo HTTP 200
+  √  Listado es arreglo, sin el eliminado y con el contacto restante
+
+Attempting to set next request to CP-006a Crear contacto sin lastName (campo ausente)
+
+□ Validaciones Negativas
+└ CP-006a Crear contacto sin lastName (campo ausente)
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.09kB, 99ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+  √  Sin token ni _id en la respuesta
+
+Attempting to set next request to CP-006b Crear contacto sin lastName (valor null)
+
+└ CP-006b Crear contacto sin lastName (valor null)
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.12kB, 109ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+  √  Sin token ni _id en la respuesta
+
+Attempting to set next request to CP-006c Crear contacto sin lastName (cadena vacia)
+
+└ CP-006c Crear contacto sin lastName (cadena vacia)
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.11kB, 111ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+  √  Sin token ni _id en la respuesta
+
+Attempting to set next request to CP-007a GET contacto inexistente
+
+└ CP-007a GET contacto inexistente
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/507f1f77bcf86cd799439011 [404 Not Found, 660B, 99ms]
+  √  Codigo HTTP 404
+
+Attempting to set next request to CP-007b PUT contacto inexistente
+
+└ CP-007b PUT contacto inexistente
+  PUT https://thinking-tester-contact-list.herokuapp.com/contacts/507f1f77bcf86cd799439011 [404 Not Found, 660B, 96ms]
+  √  Codigo HTTP 404
+
+Attempting to set next request to CP-007c PATCH contacto inexistente
+
+└ CP-007c PATCH contacto inexistente
+  PATCH https://thinking-tester-contact-list.herokuapp.com/contacts/507f1f77bcf86cd799439011 [404 Not Found, 660B, 114ms]
+  √  Codigo HTTP 404
+
+Attempting to set next request to CP-007d DELETE contacto inexistente
+
+└ CP-007d DELETE contacto inexistente
+  DELETE https://thinking-tester-contact-list.herokuapp.com/contacts/507f1f77bcf86cd799439011 [404 Not Found, 660B, 100ms]
+  √  Codigo HTTP 404
+
+Attempting to set next request to CP-008a PUT sin firstName
+
+└ CP-008a PUT sin firstName
+  PUT https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [400 Bad Request, 1.08kB, 104ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+
+Attempting to set next request to CP-008b Verificar contacto original intacto
+
+└ CP-008b Verificar contacto original intacto
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [200 OK, 1.05kB, 105ms]
+  √  Codigo HTTP 200
+  √  El contacto no fue modificado
+
+Attempting to set next request to CP-009a Tipo incorrecto: phone como arreglo [Exploratorio]
+
+└ CP-009a Tipo incorrecto: phone como arreglo [Exploratorio]
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.03kB, 118ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+
+Attempting to set next request to CP-009b Tipo incorrecto: birthdate como numero [Exploratorio]
+
+└ CP-009b Tipo incorrecto: birthdate como numero [Exploratorio]
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.14kB, 104ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+
+Attempting to set next request to CP-010a POST con arreglo JSON como cuerpo [Exploratorio]
+
+└ CP-010a POST con arreglo JSON como cuerpo [Exploratorio]
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.34kB, 106ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+
+Attempting to set next request to CP-010b PATCH con arreglo JSON como cuerpo [Exploratorio]
+
+└ CP-010b PATCH con arreglo JSON como cuerpo [Exploratorio]
+  PATCH https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [200 OK, 1.05kB, 111ms]
+  √  Respuesta controlada (sin error 5xx)
+  ┌
+  │ 'CP-010b HTTP', 200
+  └
+
+Attempting to set next request to CP-010b2 Verificar contacto sin alteraciones tras PATCH con arreglo
+
+└ CP-010b2 Verificar contacto sin alteraciones tras PATCH con arreglo
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [200 OK, 1.06kB, 114ms]
+  √  Codigo HTTP 200
+  √  El contacto no fue alterado
+
+Attempting to set next request to CP-010c POST con Content-Type application/xml [Exploratorio]
+
+└ CP-010c POST con Content-Type application/xml [Exploratorio]
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [400 Bad Request, 1.35kB, 112ms]
+  √  Respuesta controlada: error 4xx, sin 5xx
+  ┌
+  │ 'CP-010c HTTP', 400
+  └
+
+Attempting to set next request to CP-011a Registrar usuario sin email (campo ausente)
+
+└ CP-011a Registrar usuario sin email (campo ausente)
+  POST https://thinking-tester-contact-list.herokuapp.com/users [400 Bad Request, 801B, 123ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+  √  Sin token ni _id en la respuesta
+
+Attempting to set next request to CP-011b Registrar usuario sin email (valor null)
+
+└ CP-011b Registrar usuario sin email (valor null)
+  POST https://thinking-tester-contact-list.herokuapp.com/users [400 Bad Request, 1.16kB, 98ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+  √  Sin token ni _id en la respuesta
+
+Attempting to set next request to CP-012a PATCH con email de formato invalido
+
+└ CP-012a PATCH con email de formato invalido
+  PATCH https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [400 Bad Request, 1.14kB, 112ms]
+  √  Codigo HTTP 400
+  √  Respuesta de error con atributo message (string)
+
+Attempting to set next request to CP-012b Verificar email original sin cambios
+
+└ CP-012b Verificar email original sin cambios
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [200 OK, 1.06kB, 118ms]
+  √  Codigo HTTP 200
+  √  El email no fue alterado
+
+Attempting to set next request to CP-013a GET /contacts sin Authorization
+
+□ Seguridad y Autenticacion
+└ CP-013a GET /contacts sin Authorization
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts [401 Unauthorized, 789B, 129ms]
+  √  Codigo HTTP 401
+  √  Respuesta de error con atributo error (string)
+
+Attempting to set next request to CP-013b GET /users/me sin Authorization
+
+└ CP-013b GET /users/me sin Authorization
+  GET https://thinking-tester-contact-list.herokuapp.com/users/me [401 Unauthorized, 789B, 105ms]
+  √  Codigo HTTP 401
+  √  Respuesta de error con atributo error (string)
+
+Attempting to set next request to CP-013c POST /contacts sin Authorization
+
+└ CP-013c POST /contacts sin Authorization
+  POST https://thinking-tester-contact-list.herokuapp.com/contacts [401 Unauthorized, 789B, 106ms]
+  √  Codigo HTTP 401
+  √  Respuesta de error con atributo error (string)
+
+Attempting to set next request to CP-014-setup Registrar usuario 2
+
+└ CP-014-setup Registrar usuario 2
+  POST https://thinking-tester-contact-list.herokuapp.com/users [201 Created, 1.29kB, 138ms]
+  √  Codigo HTTP 201
+
+Attempting to set next request to CP-014a GET contacto de otro usuario
+
+└ CP-014a GET contacto de otro usuario
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [404 Not Found, 672B, 107ms]
+  √  Acceso denegado (401, 403 o 404), nunca exitoso
+  ┌
+  │ 'HTTP', 404
+  └
+
+Attempting to set next request to CP-014b PUT contacto de otro usuario
+
+└ CP-014b PUT contacto de otro usuario
+  PUT https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [404 Not Found, 672B, 99ms]
+  √  Acceso denegado (401, 403 o 404), nunca exitoso
+  ┌
+  │ 'HTTP', 404
+  └
+
+Attempting to set next request to CP-014c DELETE contacto de otro usuario
+
+└ CP-014c DELETE contacto de otro usuario
+  DELETE https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [404 Not Found, 672B, 102ms]
+  √  Acceso denegado (401, 403 o 404), nunca exitoso
+  ┌
+  │ 'HTTP', 404
+  └
+
+Attempting to set next request to CP-014d Propietario conserva su contacto intacto
+
+└ CP-014d Propietario conserva su contacto intacto
+  GET https://thinking-tester-contact-list.herokuapp.com/contacts/6b02445b3cd8c0001517ec02 [200 OK, 1.07kB, 103ms]
+  √  Codigo HTTP 200
+  √  El contacto sigue existiendo y sin cambios
+
+Attempting to set next request to CP-015a Eliminar cuenta de usuario
+
+└ CP-015a Eliminar cuenta de usuario
+  DELETE https://thinking-tester-contact-list.herokuapp.com/users/me [200 OK, 665B, 104ms]
+  √  Codigo HTTP 200
+
+Attempting to set next request to CP-015b Token anterior deja de funcionar
+
+└ CP-015b Token anterior deja de funcionar
+  GET https://thinking-tester-contact-list.herokuapp.com/users/me [401 Unauthorized, 797B, 99ms]
+  √  Codigo HTTP 401
+  √  Respuesta de error con atributo error (string)
+
+Attempting to set next request to CP-015c Login con credenciales eliminadas
+
+└ CP-015c Login con credenciales eliminadas
+  POST https://thinking-tester-contact-list.herokuapp.com/users/login [401 Unauthorized, 667B, 118ms]
+  √  Codigo HTTP 401
+  √  Sin token en la respuesta
+
+Attempting to set next request to Cleanup Eliminar usuario 2
+
+└ Cleanup Eliminar usuario 2
+  DELETE https://thinking-tester-contact-list.herokuapp.com/users/me [200 OK, 657B, 107ms]
+  √  Usuario 2 de prueba eliminado (limpieza)
+
+┌─────────────────────────┬────────────────────┬───────────────────┐
+│                         │           executed │            failed │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              iterations │                  1 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│                requests │                 43 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│            test-scripts │                 43 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│      prerequest-scripts │                  2 │                 0 │
+├─────────────────────────┼────────────────────┼───────────────────┤
+│              assertions │                 77 │                 0 │
+├─────────────────────────┴────────────────────┴───────────────────┤
+│ total run duration: 8.6s                                         │
+├──────────────────────────────────────────────────────────────────┤
+│ total data received: 9.06kB (approx)                             │
+├──────────────────────────────────────────────────────────────────┤
+│ average response time: 117ms [min: 96ms, max: 490ms, s.d.: 58ms] │
+└──────────────────────────────────────────────────────────────────┘

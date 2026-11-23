@@ -1,0 +1,12 @@
+﻿target/
+*.log
+node_modules/
+
+CLAUDE.md
+.claude/
+ProyectoFinal-CyPS-262.pdf
+!docs/evidencias/*.log
+*.zip
+docs/06-tutorial-interactivo.html
+docs/07-guia-manual-completa.html
+docs/diapositivas-estudio.html

@@ -1,0 +1,191 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------< com.grupo11.calidad:contactlist-karate-tests >------------
+[INFO] Building ContactList API - Karate Tests (Grupo 11) 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] Loaded 24571 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ contactlist-karate-tests ---
+[INFO] Deleting D:\PROYECTO FINAL CALIDAD Y PRUEBAS DE SOFTWARE\karate-tests\target
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ contactlist-karate-tests ---
+[INFO] skip non existing resourceDirectory D:\PROYECTO FINAL CALIDAD Y PRUEBAS DE SOFTWARE\karate-tests\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ contactlist-karate-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ contactlist-karate-tests ---
+[INFO] Copying 9 resources from src\test\java to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ contactlist-karate-tests ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 2 source files with javac [debug release 17] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.2:test (default-test) @ contactlist-karate-tests ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running ContactListTest
+20:22:30.663 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:32.996 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:34.968 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:36.790 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:39.279 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:41.117 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:42.678 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:44.108 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:45.510 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:46.703 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:47.817 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:48.800 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:50.460 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:51.161 [main] INFO  com.intuit.karate - [print] CP-009 phone como arreglo -> HTTP 400 respuesta: {
+  "errors": {
+    "phone": {
+      "stringValue": "\"[ '800', '555' ]\"",
+      "kind": "string",
+      "value": [
+        "800",
+        "555"
+      ],
+      "path": "phone",
+      "reason": null
+    }
+  },
+  "_message": "Contact validation failed",
+  "message": "Contact validation failed: phone: Cast to string failed for value \"[ '800', '555' ]\" at path \"phone\""
+}
+ 
+20:22:51.775 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:52.407 [main] INFO  com.intuit.karate - [print] CP-009 birthdate como numero -> HTTP 400 respuesta: {
+  "errors": {
+    "birthdate": {
+      "name": "ValidatorError",
+      "message": "Birthdate is invalid",
+      "properties": {
+        "message": "Birthdate is invalid",
+        "type": "user defined",
+        "path": "birthdate",
+        "value": "19900520",
+        "reason": {
+        }
+      },
+      "kind": "user defined",
+      "path": "birthdate",
+      "value": "19900520",
+      "reason": {
+      }
+    }
+  },
+  "_message": "Contact validation failed",
+  "message": "Contact validation failed: birthdate: Birthdate is invalid"
+}
+ 
+20:22:53.112 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:53.854 [main] INFO  com.intuit.karate - [print] CP-010a -> HTTP 400 respuesta: {
+  "errors": {
+    "lastName": {
+      "name": "ValidatorError",
+      "message": "Path `lastName` is required.",
+      "properties": {
+        "message": "Path `lastName` is required.",
+        "type": "required",
+        "path": "lastName"
+      },
+      "kind": "required",
+      "path": "lastName"
+    },
+    "firstName": {
+      "name": "ValidatorError",
+      "message": "Path `firstName` is required.",
+      "properties": {
+        "message": "Path `firstName` is required.",
+        "type": "required",
+        "path": "firstName"
+      },
+      "kind": "required",
+      "path": "firstName"
+    }
+  },
+  "_message": "Contact validation failed",
+  "message": "Contact validation failed: lastName: Path `lastName` is required., firstName: Path `firstName` is required."
+}
+ 
+20:22:54.564 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:55.647 [main] INFO  com.intuit.karate - [print] CP-010b -> HTTP 200 respuesta: {
+  "_id": "6b0243ef3cd8c0001517ebf0",
+  "firstName": "Juan",
+  "lastName": "Perez",
+  "country": "EC",
+  "birthdate": "1990-05-20",
+  "phone": "8005551234",
+  "city": "Quito",
+  "postalCode": "170101",
+  "stateProvince": "Pichincha",
+  "street1": "Calle Falsa 123",
+  "street2": "Apto 4",
+  "email": "juan.perez@example.com",
+  "owner": "6b0243ee3cd8c0001517ebee",
+  "__v": 0
+}
+ 
+20:22:56.318 [main] INFO  com.intuit.karate - karate.env = dev 
+20:22:56.997 [main] INFO  com.intuit.karate - [print] CP-010c -> HTTP 400 
+20:22:57.695 [main] INFO  com.intuit.karate - karate.env = dev 
+---------------------------------------------------------
+feature: classpath:features/contacts.feature
+scenarios: 18 | passed: 18 | failed:  0 | time: 22.0056
+---------------------------------------------------------
+
+20:23:01.604 [main] INFO  c.i.karate.Suite - <<pass>> feature 1 of 7 (6 remaining) classpath:features/contacts.feature
+20:23:01.611 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:02.168 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:02.597 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:02.982 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:04.555 [main] INFO  com.intuit.karate - [print] CP-014a -> HTTP 404 
+20:23:05.712 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:07.300 [main] INFO  com.intuit.karate - [print] CP-014b -> HTTP 404 
+20:23:08.423 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:09.908 [main] INFO  com.intuit.karate - [print] CP-014c -> HTTP 404 
+---------------------------------------------------------
+feature: classpath:features/security.feature
+scenarios:  6 | passed:  6 | failed:  0 | time: 7.0821
+---------------------------------------------------------
+
+20:23:11.155 [main] INFO  c.i.karate.Suite - <<pass>> feature 2 of 7 (5 remaining) classpath:features/security.feature
+20:23:11.158 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:12.372 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:12.788 [main] INFO  com.intuit.karate - karate.env = dev 
+20:23:13.174 [main] INFO  com.intuit.karate - karate.env = dev 
+---------------------------------------------------------
+feature: classpath:features/users.feature
+scenarios:  4 | passed:  4 | failed:  0 | time: 3.5800
+---------------------------------------------------------
+
+20:23:15.273 [main] INFO  c.i.karate.Suite - <<pass>> feature 3 of 7 (4 remaining) classpath:features/users.feature
+Karate version: 1.5.2
+======================================================
+elapsed:  46.94 | threads:    1 | thread time: 32.67 
+features:     3 | skipped:    4 | efficiency: 0.70
+scenarios:   28 | passed:    28 | failed: 0
+======================================================
+
+HTML report: (paste into browser to view) | Karate version: 1.5.2
+file:///D:/PROYECTO%20FINAL%20CALIDAD%20Y%20PRUEBAS%20DE%20SOFTWARE/karate-tests/target/karate-reports/karate-summary.html
+===================================================================
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 47.63 s -- in ContactListTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  52.328 s
+[INFO] Finished at: 2026-11-21T20:23:15-05:00
+[INFO] ------------------------------------------------------------------------
